@@ -1,5 +1,5 @@
 from django.contrib import admin
-from webapp.models import Advantages
+from webapp.models import Advantages, Image, About_us
 
 
 class AdvantagesAdmin(admin.ModelAdmin):
@@ -7,3 +7,5 @@ class AdvantagesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Advantages)
+admin.site.register(Image)
+admin.site.register(About_us)
