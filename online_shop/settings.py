@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'rest_framework',
     'rest_framework_swagger',
+    'colorfield',
 ]
 
 MIDDLEWARE = [
