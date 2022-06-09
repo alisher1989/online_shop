@@ -74,6 +74,17 @@ class News(models.Model):
         return self.title
 
 
+class Collection(models.Model):
+    image = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото коллекции')
+    title = models.CharField(max_length=200, verbose_name='Название')
+
+    class Meta:
+        verbose_name_plural = "Коллекции"
+
+    def __str__(self):
+        return self.title
+
+
 
 
 

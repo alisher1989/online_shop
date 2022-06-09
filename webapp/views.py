@@ -8,9 +8,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 
-from webapp.models import Advantages, About_us, Help, ImageHelp, News
+from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer
+    NewsSerializer, CollectionSerializer
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -70,6 +70,12 @@ class NewsViewSet(viewsets.ModelViewSet):
     serializer_class = NewsSerializer
     pagination_class = CustomPaginationForNews
 
+
+class CollectionViewSet(viewsets.ModelViewSet):
+    """Список новостей"""
+    queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
+    pagination_class = CustomPaginationForNews
 
 
 
