@@ -1,6 +1,15 @@
-from rest_framework import viewsets
-from webapp.models import Advantages, About_us
-from webapp.serializers import AdvantagesSerializer, About_usSerializer
+import json
+
+from django.http import JsonResponse
+from requests import Response
+from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
+
+from webapp.models import Advantages, About_us, Help, ImageHelp
+from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -13,3 +22,37 @@ class About_usViewSet(viewsets.ModelViewSet):
     """Инфо о нас"""
     queryset = About_us.objects.all()
     serializer_class = About_usSerializer
+
+
+class HelpViewSet(viewsets.ModelViewSet):
+    """Инфо о нас"""
+    queryset = Help.objects.all()
+    serializer_class = HelpSerializer
+
+
+class ApiView(APIView):
+    """Endpoint для получения одного фото и всех вопрос/ответов"""
+    def get(self, request, *args, **kwargs):
+        tutorials = ImageHelp.objects.all()
+        tutorials_serializer = ImageHelpSerializer(tutorials, many=True)
+        h = Help.objects.all()
+        other = HelpSerializer(h, many=True)
+        return JsonResponse({'image_of_help': tutorials_serializer.data, 'questions_answers': other.data}, safe=False)
+
+
+class HelpImageViewSet(viewsets.ModelViewSet):
+    """Добавить фото для главы 'Помощь'"""
+    queryset = ImageHelp.objects.all()
+    serializer_class = ImageHelpSerializer
+
+    def create(self, request, *args, **kwargs):
+        ImageHelp.objects.get(pk=1).delete()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return JsonResponse(data=serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+
+
