@@ -62,6 +62,18 @@ class ImageHelp(models.Model):
         return 'Фото для помощи'
 
 
+class News(models.Model):
+    image = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для новостей')
+    title = models.CharField(max_length=200, verbose_name='Название')
+    description = RichTextField(max_length=1000, verbose_name='Описание')
+
+    class Meta:
+        verbose_name_plural = "Новости"
+
+    def __str__(self):
+        return self.title
+
+
 
 
 

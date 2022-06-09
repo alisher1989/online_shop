@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from webapp.models import Advantages, Image, About_us, Help, ImageHelp
+from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -33,6 +33,13 @@ class HelpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Help
         fields = ['questions', 'answers']
+
+
+class NewsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = News
+        fields = ['image', 'title', 'description']
 
 
 

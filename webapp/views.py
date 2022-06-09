@@ -8,8 +8,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet
 
-from webapp.models import Advantages, About_us, Help, ImageHelp
-from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer
+from webapp.models import Advantages, About_us, Help, ImageHelp, News
+from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
+    NewsSerializer
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -51,6 +52,24 @@ class HelpImageViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return JsonResponse(data=serializer.data, status=status.HTTP_201_CREATED)
+
+
+from rest_framework import pagination
+
+
+class CustomPaginationForNews(pagination.PageNumberPagination):
+    page_size = 8
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+    page_query_param = 'p'
+
+
+class NewsViewSet(viewsets.ModelViewSet):
+    """Список новостей"""
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+    pagination_class = CustomPaginationForNews
+
 
 
 
