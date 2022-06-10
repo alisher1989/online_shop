@@ -1,6 +1,8 @@
 from colorfield.fields import ColorField
 from django.db import models
 from ckeditor.fields import RichTextField
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 
 
 class Advantages(models.Model):
@@ -28,7 +30,8 @@ class Image(models.Model):
 
 class ImageForItem(models.Model):
     image = models.FileField(upload_to='gallery_images')
-    about_us = models.ForeignKey('Item', related_name='images_for_item', on_delete=models.CASCADE, null=True)
+    color = ColorField(null=True)
+    item = models.ForeignKey('Item', related_name='images_for_item', on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name_plural = 'Фото для товара'
@@ -97,18 +100,17 @@ class Collection(models.Model):
 
 
 class Item(models.Model):
-    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, related_name='items_collection')
-    color = ColorField(default='#FF0000')
-    title = models.CharField(max_length=200, verbose_name='Название')
-    article = models.CharField(max_length=200, verbose_name='Артикул')
-    price = models.IntegerField(max_length=20, verbose_name='Цена')
-    old_price = models.IntegerField(max_length=20, verbose_name='Старая цена')
-    discount = models.IntegerField(max_length=20, verbose_name='Процент скидки')
-    description = RichTextField(max_length=1000, verbose_name='Описание товара')
-    product_size = models.CharField(max_length=200, verbose_name='Размерный ряд товара')
-    fabric_structure = models.CharField(max_length=200, verbose_name='Состав ткани')
-    quantity_in_line = models.IntegerField(max_length=20, verbose_name='Количество в линейке')
-    material = models.CharField(max_length=200, verbose_name='Материал')
+    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, related_name='items_collection', null=True)
+    title = models.CharField(max_length=200, verbose_name='Название', blank=True)
+    article = models.CharField(max_length=200, verbose_name='Артикул', null=True, blank=True)
+    price = models.IntegerField(max_length=20, verbose_name='Цена', null=True, blank=True)
+    old_price = models.IntegerField(max_length=20, verbose_name='Старая цена', null=True, blank=True)
+    discount = models.IntegerField(max_length=20, verbose_name='Процент скидки', null=True, blank=True)
+    description = RichTextField(max_length=1000, verbose_name='Описание товара', null=True, blank=True)
+    product_size = models.CharField(max_length=200, verbose_name='Размерный ряд товара', null=True, blank=True)
+    fabric_structure = models.CharField(max_length=200, verbose_name='Состав ткани', null=True, blank=True)
+    quantity_in_line = models.IntegerField(max_length=20, verbose_name='Количество в линейке', null=True, blank=True)
+    material = models.CharField(max_length=200, verbose_name='Материал', null=True, blank=True)
     hit_of_sales = models.BooleanField(default=False)
     new_product = models.BooleanField(default=False)
 
@@ -117,6 +119,18 @@ class Item(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if self.discount:
+            Discount_Amount = (self.discount * self.price) / 100
+            Discounted_Price = self.price - Discount_Amount
+            self.old_price = Discounted_Price
+            print('yes discoutn')
+        else:
+            self.old_price = None
+        super(Item, self).save(*args, **kwargs)
+
+
 
 
 

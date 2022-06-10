@@ -1,9 +1,9 @@
-import nested_admin
 from django.contrib.admin import TabularInline
-from nested_admin import nested
 from django.contrib import admin
-from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
 
+from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from django import forms
+from django.forms.utils import ErrorList
 
 class AdvantagesAdmin(admin.ModelAdmin):
     list_display = ['image', 'header', 'description']
@@ -12,10 +12,19 @@ class AdvantagesAdmin(admin.ModelAdmin):
 class ImageAdminInline(TabularInline):
     extra = 1
     model = ImageForItem
+    fields = ['image', 'color']
+
+
+class HomePageModelForm(forms.ModelForm):
+    def clean(self):
+        if self.instance.images_for_item.all().count() > 2:
+            self._errors.setdefault('__all__', ErrorList()).append("Вы не можете добавлять больше 3 фото на один товар.")
+        return self.cleaned_data
 
 
 @admin.register(Item)
 class ProductModelAdmin(admin.ModelAdmin):
+    form = HomePageModelForm
     inlines = (ImageAdminInline,)
     exclude = []
 
