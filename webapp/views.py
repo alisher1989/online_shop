@@ -1,16 +1,10 @@
-import json
-
 from django.http import JsonResponse
-from requests import Response
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
-
-from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection
+from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer, CollectionSerializer
+    NewsSerializer, CollectionSerializer, ItemSerializer
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -77,6 +71,21 @@ class CollectionViewSet(viewsets.ModelViewSet):
     serializer_class = CollectionSerializer
     pagination_class = CustomPaginationForNews
 
+
+class ItemViewSet(viewsets.ModelViewSet):
+    """Инфо детального просмотра Товара"""
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+
+    def get_serializer_context(self):
+        context = super(ItemViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 
