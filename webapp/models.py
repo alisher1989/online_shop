@@ -113,6 +113,7 @@ class Item(models.Model):
     material = models.CharField(max_length=200, verbose_name='Материал', null=True, blank=True)
     hit_of_sales = models.BooleanField(default=False)
     new_product = models.BooleanField(default=False)
+    favorite = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Товары"

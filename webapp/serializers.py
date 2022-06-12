@@ -88,6 +88,22 @@ class ItemSerializer(serializers.ModelSerializer):
             return dict_of_data
 
 
+class SimilarItemSerializer(serializers.ModelSerializer):
+    item_images = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Item
+        fields = ['collection', 'id', 'item_images', 'title', 'price', 'old_price', 'discount', 'description', 'product_size',
+                  'new_product']
 
-
+    def get_item_images(self, obj):
+        request = self.context.get('request')
+        pk = self.context.get('pk')
+        queryset = ImageForItem.objects.filter(item_id=pk)
+        if not ImageForItem.objects.filter(item_id=pk):
+            return {}
+        else:
+            list_of_data = []
+            for i in queryset:
+                list_of_data.append(request.build_absolute_uri(i.image.url))
+            return list_of_data

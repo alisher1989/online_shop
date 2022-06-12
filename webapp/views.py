@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer, CollectionSerializer, ItemSerializer
+    NewsSerializer, CollectionSerializer, ItemSerializer, SimilarItemSerializer
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -82,10 +82,20 @@ class ItemViewSet(viewsets.ModelViewSet):
         context.update({"request": self.request})
         return context
 
+
+class SimilarItemViewSet(viewsets.ModelViewSet):
+    """Инфо детального просмотра Товара"""
+    queryset = Item.objects.all()
+    serializer_class = SimilarItemSerializer
+
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+        a = Item.objects.get(pk=kwargs['pk'])
+        similar_items = Item.objects.filter(collection=a.collection)
+        similar_items_without_selfobject = similar_items.exclude(title=a.title)
+        serializer = SimilarItemSerializer(similar_items_without_selfobject,
+                                           many=True, context={'request': request, 'pk': kwargs['pk']})
         return Response(serializer.data)
+
 
 
 

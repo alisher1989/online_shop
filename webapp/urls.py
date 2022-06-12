@@ -1,7 +1,7 @@
 from django.urls import path
 
 from webapp.views import AdvantagesViewSet, About_usViewSet, HelpViewSet, ApiView, HelpImageViewSet, NewsViewSet, \
-    CollectionViewSet, ItemViewSet
+    CollectionViewSet, ItemViewSet, SimilarItemViewSet
 
 urlpatterns = [
     path('advantages/', AdvantagesViewSet.as_view({'get': 'list'})),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('help/<int:pk>/', HelpViewSet.as_view({'put': 'update', 'get': 'retrieve'})),
     path('answers/', ApiView.as_view()),
     path('item/<int:pk>/', ItemViewSet.as_view({'get': 'retrieve'})),
+    path('item/<int:pk>/favorites/', SimilarItemViewSet.as_view({'get': 'retrieve'})),
 ]
