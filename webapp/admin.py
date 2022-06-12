@@ -5,6 +5,7 @@ from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Co
 from django import forms
 from django.forms.utils import ErrorList
 
+
 class AdvantagesAdmin(admin.ModelAdmin):
     list_display = ['image', 'header', 'description']
 
@@ -14,17 +15,24 @@ class ImageAdminInline(TabularInline):
     model = ImageForItem
     fields = ['image', 'color']
 
+    def has_add_permission(self, request, obj):
+        if obj.images_for_item.count() >= 2:
+            return False
+        print(dir(obj))
+        print(type(obj))
+        return True
 
-class HomePageModelForm(forms.ModelForm):
-    def clean(self):
-        if self.instance.images_for_item.all().count() > 2:
-            self._errors.setdefault('__all__', ErrorList()).append("Вы не можете добавлять больше 3 фото на один товар.")
-        return self.cleaned_data
+
+#class HomePageModelForm(forms.ModelForm):
+#    def clean(self):
+#        if self.instance.images_for_item.all().count() > 2:
+#            self._errors.setdefault('__all__', ErrorList()).append("Вы не можете добавлять больше 3 фото на один товар.")
+#        return self.cleaned_data
 
 
 @admin.register(Item)
 class ProductModelAdmin(admin.ModelAdmin):
-    form = HomePageModelForm
+#    form = HomePageModelForm
     inlines = (ImageAdminInline,)
     exclude = []
 

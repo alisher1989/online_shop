@@ -100,7 +100,7 @@ class Collection(models.Model):
 
 
 class Item(models.Model):
-    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, related_name='items_collection', null=True)
+    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, related_name='items_collection', null=True, blank=True)
     title = models.CharField(max_length=200, verbose_name='Название', blank=True)
     article = models.CharField(max_length=200, verbose_name='Артикул', null=True, blank=True)
     price = models.IntegerField(max_length=20, verbose_name='Цена', null=True, blank=True)
@@ -125,7 +125,6 @@ class Item(models.Model):
             Discount_Amount = (self.discount * self.price) / 100
             Discounted_Price = self.price - Discount_Amount
             self.old_price = Discounted_Price
-            print('yes discoutn')
         else:
             self.old_price = None
         super(Item, self).save(*args, **kwargs)
