@@ -1,8 +1,6 @@
 from colorfield.fields import ColorField
 from django.db import models
 from ckeditor.fields import RichTextField
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
 
 
 class Advantages(models.Model):

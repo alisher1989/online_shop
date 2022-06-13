@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer, CollectionSerializer, ItemSerializer, SimilarItemSerializer
+    NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer
+from rest_framework import pagination
+
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -49,11 +51,8 @@ class HelpImageViewSet(viewsets.ModelViewSet):
         return JsonResponse(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
-from rest_framework import pagination
-
-
 class CustomPaginationForNews(pagination.PageNumberPagination):
-    page_size = 8
+    page_size = 2
     page_size_query_param = 'page_size'
     max_page_size = 50
     page_query_param = 'p'
@@ -69,8 +68,48 @@ class NewsViewSet(viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     """Список коллекции"""
     queryset = Collection.objects.all()
-    serializer_class = CollectionSerializer
     pagination_class = CustomPaginationForNews
+    serializer_class = CollectionSerializer
+
+    def get_serializer_context(self):
+        context = super(CollectionViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+
+class CollectionDetailViewSet(viewsets.ModelViewSet):
+    """Список коллекции"""
+    queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
+
+
+class CustomPaginationForCollectionItems(pagination.PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+    page_query_param = 'p'
+
+
+class CollectionDetailViewSet2(viewsets.ModelViewSet):
+    """Список коллекции"""
+    queryset = Item.objects.all()
+    serializer_class = SimilarItemSerializer
+    pagination_class = CustomPaginationForCollectionItems
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(collection_id=kwargs['pk'])
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super(CollectionDetailViewSet2, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 class ItemViewSet(viewsets.ModelViewSet):
@@ -89,10 +128,46 @@ class SimilarItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
 
+    def list(self, request, *args, **kwargs):
+        if Item.objects.filter(collection_id=kwargs['pk']).count() > 5:
+            queryset = Item.objects.filter(collection_id=kwargs['pk'])[-5:]
+        else:
+            queryset = Item.objects.filter(collection_id=kwargs['pk'])
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     def get_serializer_context(self):
         context = super(SimilarItemViewSet, self).get_serializer_context()
         context.update({"request": self.request})
         return context
+
+
+class NewProductDetailViewSet(viewsets.ModelViewSet):
+    """Список коллекции"""
+    queryset = Item.objects.all()
+    serializer_class = SimilarItemSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(new_product=True)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super(NewProductDetailViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+
 
 
 
