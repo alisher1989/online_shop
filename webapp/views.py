@@ -7,6 +7,7 @@ from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSer
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
     FavoriteItemSerializer
 from rest_framework import pagination
+import random
 
 
 
@@ -177,7 +178,6 @@ class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = Item.objects.filter(favorite=True)
-        print(queryset.count())
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -189,6 +189,43 @@ class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
     def get_serializer_context(self):
         context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
         context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
+        return context
+
+
+class RandomProductDetailViewSet(viewsets.ModelViewSet):
+    """Список коллекции"""
+    queryset = Item.objects.all()
+    serializer_class = SimilarItemSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(favorite=True)
+        collection = Collection.objects.all()
+        random1 = []
+
+        if not queryset:
+            print('no')
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'k': i.items_collection.all()})
+            print(random1)
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['k'])))
+            queryset = l
+        else:
+            print('there is favorites')
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super(RandomProductDetailViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
         return context
 
 
