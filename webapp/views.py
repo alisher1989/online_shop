@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer
+    NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
+    FavoriteItemSerializer
 from rest_framework import pagination
 
 
@@ -167,6 +168,28 @@ class NewProductDetailViewSet(viewsets.ModelViewSet):
         context.update({"request": self.request})
         return context
 
+
+class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
+    """Список коллекции"""
+    queryset = Item.objects.all()
+    serializer_class = FavoriteItemSerializer
+    pagination_class = CustomPaginationForCollectionItems
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(favorite=True)
+        print(queryset.count())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
+        context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
+        return context
 
 
 

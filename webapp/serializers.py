@@ -94,6 +94,22 @@ class SimilarItemSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class FavoriteItemSerializer(serializers.ModelSerializer):
+    item_images = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = ['id', 'item_images', 'discount', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite', 'count']
+
+    def get_item_images(self, obj):
+        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
+        return serializer.data
+
+    def get_count(self, obj):
+        return {'count_of_favorites': self.context['count']}
+
+
 class CollectionItemSerializer(serializers.ModelSerializer):
 
     class Meta:

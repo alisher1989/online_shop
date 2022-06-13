@@ -2,7 +2,7 @@ from django.urls import path
 
 from webapp.views import AdvantagesViewSet, About_usViewSet, HelpViewSet, ApiView, HelpImageViewSet, NewsViewSet, \
     CollectionViewSet, ItemViewSet, SimilarItemViewSet, CollectionDetailViewSet, CollectionDetailViewSet2, \
-    NewProductDetailViewSet
+    NewProductDetailViewSet, FavoriteProductDetailViewSet
 
 urlpatterns = [
     path('advantages/', AdvantagesViewSet.as_view({'get': 'list'})),
@@ -10,6 +10,7 @@ urlpatterns = [
     path('news/', NewsViewSet.as_view({'get': 'list'})),
     path('collection/', CollectionViewSet.as_view({'get': 'list'})),
     path('new_product/', NewProductDetailViewSet.as_view({'get': 'list'})),
+    path('favorites/', FavoriteProductDetailViewSet.as_view({'get': 'list'})),
     path('collection/<int:pk>/items/', CollectionDetailViewSet2.as_view({'get': 'list'})),
     path('collection/<int:pk>/', CollectionDetailViewSet.as_view({'get': 'retrieve'})),
 

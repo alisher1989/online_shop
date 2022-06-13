@@ -13,12 +13,12 @@ class ImageAdminInline(TabularInline):
     model = ImageForItem
     fields = ['image', 'color']
 
-    def has_add_permission(self, request, obj):
-        if obj.images_for_item.count() >= 2:
-            return False
-        print(dir(obj))
-        print(type(obj))
-        return True
+    #def has_add_permission(self, request, obj):
+     #   if obj.images_for_item.count() >= 2:
+      #      return False
+       # print(dir(obj))
+        #print(type(obj))
+       # return True
 
 
 #class HomePageModelForm(forms.ModelForm):
