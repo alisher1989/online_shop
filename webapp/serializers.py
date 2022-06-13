@@ -24,9 +24,16 @@ class About_usSerializer(serializers.ModelSerializer):
 
 
 class ImageHelpSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ImageHelp
-        fields = ['image']
+        fields = ['photo_url']
+
+    def get_photo_url(self, obj):
+        request = self.context.get('request')
+        photo_url = obj.image.url
+        return request.build_absolute_uri(photo_url)
 
 
 class HelpSerializer(serializers.ModelSerializer):
@@ -88,22 +95,40 @@ class ItemSerializer(serializers.ModelSerializer):
             return dict_of_data
 
 
-class SimilarItemSerializer(serializers.ModelSerializer):
-    item_images = serializers.SerializerMethodField()
+class SimilarItemSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['collection', 'id', 'item_images', 'title', 'price', 'old_price', 'discount', 'description', 'product_size',
-                  'new_product']
+        fields = ['id', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
 
-    def get_item_images(self, obj):
-        request = self.context.get('request')
-        pk = self.context.get('pk')
-        queryset = ImageForItem.objects.filter(item_id=pk)
-        if not ImageForItem.objects.filter(item_id=pk):
-            return {}
-        else:
-            list_of_data = []
-            for i in queryset:
-                list_of_data.append(request.build_absolute_uri(i.image.url))
-            return list_of_data
+
+class SimilarItemSerializer(serializers.ModelSerializer):
+    similar_items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = ['similar_items']
+
+    def get_similar_items(self, obj):
+        request = self.context['request']
+        a = Item.objects.get(pk=obj.id)
+        b = Item.objects.filter(collection=a.collection).exclude(pk=obj.id)
+        my_list = []
+        serializer = SimilarItemSerializer2(b, many=True)
+        list_of_data = []
+        if serializer.data:
+            for i in serializer.data:
+                dict_of_data = dict(i)
+                my_list.append({'images': ImageForItem.objects.filter(item_id=dict_of_data['id']), 'item': dict_of_data})
+        for i in my_list:
+            for j in i['images']:
+                if j.image != request.build_absolute_uri(j.image):
+                    j.image = request.build_absolute_uri(j.image.url)
+                    j.save()
+                else:
+                    pass
+            list_of_data.append({'images_for_item': i['images'].values('image', 'color'), 'item': i['item']})
+        return {'sim': list_of_data}
+
+
+

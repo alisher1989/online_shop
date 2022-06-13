@@ -13,5 +13,5 @@ urlpatterns = [
     path('help/<int:pk>/', HelpViewSet.as_view({'put': 'update', 'get': 'retrieve'})),
     path('answers/', ApiView.as_view()),
     path('item/<int:pk>/', ItemViewSet.as_view({'get': 'retrieve'})),
-    path('item/<int:pk>/favorites/', SimilarItemViewSet.as_view({'get': 'retrieve'})),
+    path('similar/<int:pk>/', SimilarItemViewSet.as_view({'get': 'retrieve'})),
 ]

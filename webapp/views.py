@@ -20,7 +20,7 @@ class About_usViewSet(viewsets.ModelViewSet):
 
 
 class HelpViewSet(viewsets.ModelViewSet):
-    """Инфо о нас"""
+    """Инфо о помощи"""
     queryset = Help.objects.all()
     serializer_class = HelpSerializer
 
@@ -29,10 +29,11 @@ class ApiView(APIView):
     """Endpoint для получения одного фото и всех вопрос/ответов"""
     def get(self, request, *args, **kwargs):
         tutorials = ImageHelp.objects.all()
-        tutorials_serializer = ImageHelpSerializer(tutorials, many=True)
+        tutorials_serializer = ImageHelpSerializer(tutorials, many=True,  context={'request': request})
         h = Help.objects.all()
         other = HelpSerializer(h, many=True)
-        return JsonResponse({'image_of_help': tutorials_serializer.data, 'questions_answers': other.data}, safe=False)
+        response = {'image_of_help': tutorials_serializer.data, 'questions_answers': other.data}
+        return Response(response, 200)
 
 
 class HelpImageViewSet(viewsets.ModelViewSet):
@@ -66,7 +67,7 @@ class NewsViewSet(viewsets.ModelViewSet):
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
-    """Список новостей"""
+    """Список коллекции"""
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
     pagination_class = CustomPaginationForNews
@@ -84,17 +85,14 @@ class ItemViewSet(viewsets.ModelViewSet):
 
 
 class SimilarItemViewSet(viewsets.ModelViewSet):
-    """Инфо детального просмотра Товара"""
+    """Похожие товары"""
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        a = Item.objects.get(pk=kwargs['pk'])
-        similar_items = Item.objects.filter(collection=a.collection)
-        similar_items_without_selfobject = similar_items.exclude(title=a.title)
-        serializer = SimilarItemSerializer(similar_items_without_selfobject,
-                                           many=True, context={'request': request, 'pk': kwargs['pk']})
-        return Response(serializer.data)
+    def get_serializer_context(self):
+        context = super(SimilarItemViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
 

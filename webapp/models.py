@@ -30,7 +30,7 @@ class Image(models.Model):
 
 class ImageForItem(models.Model):
     image = models.FileField(upload_to='gallery_images')
-    color = ColorField(null=True)
+    color = ColorField(null=True, blank=True)
     item = models.ForeignKey('Item', related_name='images_for_item', on_delete=models.CASCADE, null=True)
 
     class Meta:
@@ -129,7 +129,6 @@ class Item(models.Model):
         else:
             self.old_price = None
         super(Item, self).save(*args, **kwargs)
-
 
 
 
