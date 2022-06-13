@@ -1,8 +1,6 @@
 from colorfield.fields import ColorField
 from django.db import models
 from ckeditor.fields import RichTextField
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
 
 
 class Advantages(models.Model):
@@ -30,7 +28,7 @@ class Image(models.Model):
 
 class ImageForItem(models.Model):
     image = models.FileField(upload_to='gallery_images')
-    color = ColorField(null=True)
+    color = ColorField(null=True, blank=True)
     item = models.ForeignKey('Item', related_name='images_for_item', on_delete=models.CASCADE, null=True)
 
     class Meta:
@@ -113,6 +111,7 @@ class Item(models.Model):
     material = models.CharField(max_length=200, verbose_name='Материал', null=True, blank=True)
     hit_of_sales = models.BooleanField(default=False)
     new_product = models.BooleanField(default=False)
+    favorite = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Товары"
@@ -128,7 +127,6 @@ class Item(models.Model):
         else:
             self.old_price = None
         super(Item, self).save(*args, **kwargs)
-
 
 
 

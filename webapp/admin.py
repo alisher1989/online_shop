@@ -2,8 +2,6 @@ from django.contrib.admin import TabularInline
 from django.contrib import admin
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
-from django import forms
-from django.forms.utils import ErrorList
 
 
 class AdvantagesAdmin(admin.ModelAdmin):

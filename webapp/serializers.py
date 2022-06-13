@@ -24,9 +24,16 @@ class About_usSerializer(serializers.ModelSerializer):
 
 
 class ImageHelpSerializer(serializers.ModelSerializer):
+    photo_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ImageHelp
-        fields = ['image']
+        fields = ['photo_url']
+
+    def get_photo_url(self, obj):
+        request = self.context.get('request')
+        photo_url = obj.image.url
+        return request.build_absolute_uri(photo_url)
 
 
 class HelpSerializer(serializers.ModelSerializer):
@@ -44,12 +51,14 @@ class NewsSerializer(serializers.ModelSerializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Collection
         fields = ['id', 'image', 'title']
 
 
 class ItemImageSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ImageForItem
         fields = ['image', 'color', 'item']
@@ -65,27 +74,31 @@ class ItemSerializer(serializers.ModelSerializer):
                   'quantity_in_line', 'material', 'hit_of_sales', 'new_product']
 
     def get_item_images(self, obj):
-        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True)
-        request = self.context.get('request')
-        if not ImageForItem.objects.filter(item_id=obj.pk):
-            return serializer.data
-        else:
-            list_of_data = []
-            for i in serializer.data:
-                dict_of_data = dict(i)
-                dict_of_data['image'] = request.build_absolute_uri(dict_of_data['image'])
-                list_of_data.append(dict_of_data)
-            return list_of_data
+        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
+        return serializer.data
 
     def get_item_collection(self, obj):
-        serializer = CollectionSerializer(Collection.objects.filter(items_collection=obj.id), many=True)
-        request = self.context.get('request')
-        if not Collection.objects.filter(items_collection=obj.id):
-            return serializer.data
-        else:
-            dict_of_data = dict(serializer.data[0])
-            dict_of_data['image'] = request.build_absolute_uri(dict_of_data['image'])
-            return dict_of_data
+        serializer = CollectionSerializer(Collection.objects.filter(items_collection=obj.id), many=True, context={'request': self.context['request']})
+        return serializer.data
+
+
+class SimilarItemSerializer(serializers.ModelSerializer):
+    item_images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = ['id', 'item_images', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
+
+    def get_item_images(self, obj):
+        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
+        return serializer.data
+
+
+class CollectionItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Item
+        fields = ['id', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
 
 
 
