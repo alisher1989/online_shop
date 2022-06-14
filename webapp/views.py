@@ -2,10 +2,10 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
-    FavoriteItemSerializer
+    FavoriteItemSerializer, PublicOfferSerializer
 from rest_framework import pagination
 import random
 
@@ -229,7 +229,8 @@ class RandomProductDetailViewSet(viewsets.ModelViewSet):
         return context
 
 
-
-
-
+class PublicOfferViewSet(viewsets.ModelViewSet):
+    """Публичная оферта"""
+    queryset = Public_offer.objects.all()
+    serializer_class = PublicOfferSerializer
 

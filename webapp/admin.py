@@ -1,7 +1,8 @@
 from django.contrib.admin import TabularInline
 from django.contrib import admin
 
-from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
+    Public_offer
 
 
 class AdvantagesAdmin(admin.ModelAdmin):
@@ -42,3 +43,4 @@ admin.site.register(Image)
 admin.site.register(About_us)
 admin.site.register(News)
 admin.site.register(Collection)
+admin.site.register(Public_offer)

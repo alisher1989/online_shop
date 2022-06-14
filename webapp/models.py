@@ -129,7 +129,12 @@ class Item(models.Model):
         super(Item, self).save(*args, **kwargs)
 
 
+class Public_offer(models.Model):
+    header = models.CharField(max_length=200, verbose_name='Заголовок')
+    description = RichTextField(max_length=1000, verbose_name='Описание')
 
+    class Meta:
+        verbose_name_plural = 'Публичная оферта'
 
 
 

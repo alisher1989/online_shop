@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
+    Public_offer
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -118,5 +119,10 @@ class CollectionItemSerializer(serializers.ModelSerializer):
 
 
 
+class PublicOfferSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Public_offer
+        exclude = []
 
 
