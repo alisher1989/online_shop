@@ -2,13 +2,13 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer
+from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer, \
+    Call_back, Slider
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
-    FavoriteItemSerializer, PublicOfferSerializer
+    FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer
 from rest_framework import pagination
 import random
-
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -80,7 +80,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 
 class CollectionDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """Просмотр детального просмотра коллекции"""
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
 
@@ -93,7 +93,7 @@ class CustomPaginationForCollectionItems(pagination.PageNumberPagination):
 
 
 class CollectionDetailViewSet2(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """При просмотре определенной коллекции, будет показаны все товары из этой коллекции"""
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
     pagination_class = CustomPaginationForCollectionItems
@@ -150,7 +150,7 @@ class SimilarItemViewSet(viewsets.ModelViewSet):
 
 
 class NewProductDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """Список Новинок """
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
 
@@ -171,7 +171,7 @@ class NewProductDetailViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """Список Избранных товаров"""
     queryset = Item.objects.all()
     serializer_class = FavoriteItemSerializer
     pagination_class = CustomPaginationForCollectionItems
@@ -193,7 +193,7 @@ class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
 
 
 class RandomProductDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """Список рандомных товаров, если нет избранных"""
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
 
@@ -203,18 +203,15 @@ class RandomProductDetailViewSet(viewsets.ModelViewSet):
         random1 = []
 
         if not queryset:
-            print('no')
             if collection:
                 for i in collection:
                     if i.items_collection.all():
                         random1.append({'k': i.items_collection.all()})
-            print(random1)
             l = []
             for i in random1:
                 l.append(random.choice(list(i['k'])))
             queryset = l
         else:
-            print('there is favorites')
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
@@ -233,4 +230,16 @@ class PublicOfferViewSet(viewsets.ModelViewSet):
     """Публичная оферта"""
     queryset = Public_offer.objects.all()
     serializer_class = PublicOfferSerializer
+
+
+class CallBackViewSet(viewsets.ModelViewSet):
+    """Обратный звонок"""
+    queryset = Call_back.objects.all()
+    serializer_class = CallBackSerializer
+
+
+class SliderViewSet(viewsets.ModelViewSet):
+    """Обратный звонок"""
+    queryset = Slider.objects.all()
+    serializer_class = SliderSerializer
 

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer
+    Public_offer, Call_back, Slider
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -118,11 +118,24 @@ class CollectionItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
 
 
-
 class PublicOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Public_offer
+        exclude = []
+
+
+class CallBackSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Call_back
+        fields = ['name', 'phone']
+
+
+class SliderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Slider
         exclude = []
 
 

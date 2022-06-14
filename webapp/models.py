@@ -10,6 +10,7 @@ class Advantages(models.Model):
 
     class Meta:
         verbose_name_plural = "Преимущества"
+        verbose_name = 'Преимущество'
 
     def __str__(self):
         return self.header
@@ -21,6 +22,7 @@ class Image(models.Model):
 
     class Meta:
         verbose_name_plural = 'Фото для главы "О нас"'
+        verbose_name = 'Фото для главы "О нас"'
 
     def __str__(self):
         return 'Фото для главы "О нас"'
@@ -33,9 +35,10 @@ class ImageForItem(models.Model):
 
     class Meta:
         verbose_name_plural = 'Фото для товара'
+        verbose_name = 'Фото для товара'
 
     def __str__(self):
-        return 'Фото для товара'
+        return self.item.title
 
 
 class About_us(models.Model):
@@ -44,6 +47,7 @@ class About_us(models.Model):
 
     class Meta:
         verbose_name_plural = "О нас"
+        verbose_name = "О нас"
 
     def __str__(self):
         return self.header
@@ -55,6 +59,7 @@ class Help(models.Model):
 
     class Meta:
         verbose_name_plural = "Помощь"
+        verbose_name = "Помощь"
 
     def __str__(self):
         return self.questions
@@ -65,13 +70,14 @@ class ImageHelp(models.Model):
 
     class Meta:
         verbose_name_plural = 'Фото для главы "Помощь"'
+        verbose_name = 'Фото для главы "Помощь"'
 
     def save(self, *args, **kwargs):
         self.pk = 1
         super(ImageHelp, self).save(*args, **kwargs)
 
     def __str__(self):
-        return 'Фото для помощи'
+        return self.image.url
 
 
 class News(models.Model):
@@ -81,6 +87,7 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = "Новости"
+        verbose_name = "Новость"
 
     def __str__(self):
         return self.title
@@ -92,6 +99,7 @@ class Collection(models.Model):
 
     class Meta:
         verbose_name_plural = "Коллекции"
+        verbose_name = "Коллекция"
 
     def __str__(self):
         return self.title
@@ -115,6 +123,7 @@ class Item(models.Model):
 
     class Meta:
         verbose_name_plural = "Товары"
+        verbose_name = "Товар"
 
     def __str__(self):
         return self.title
@@ -135,6 +144,10 @@ class Public_offer(models.Model):
 
     class Meta:
         verbose_name_plural = 'Публичная оферта'
+        verbose_name = 'Публичная оферта'
+
+    def __str__(self):
+        return self.header
 
 
 class Slider(models.Model):
@@ -143,8 +156,23 @@ class Slider(models.Model):
 
     class Meta:
         verbose_name_plural = "Слайдеры"
+        verbose_name = "Слайдер"
+
+    def __str__(self):
+        return self.title
 
 
+class Call_back(models.Model):
+    name = models.CharField(max_length=200, verbose_name='Имя', blank=False, null=False)
+    phone = models.CharField(max_length=200, verbose_name='Номер телефона', blank=False, null=False)
+    date = models.DateTimeField(verbose_name='Дата обращения', blank=False, null=False)
+    call_type = models.CharField(max_length=200, verbose_name='Тип обращения', blank=False, null=False)
+    status = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name_plural = 'Обратный звонок'
+        verbose_name = 'Обратный звонок'
 
+    def __str__(self):
+        return self.name
 
