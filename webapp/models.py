@@ -137,6 +137,14 @@ class Public_offer(models.Model):
         verbose_name_plural = 'Публичная оферта'
 
 
+class Slider(models.Model):
+    image = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для слайдера')
+    title = models.CharField(max_length=200, verbose_name='Название', null=False, blank=False)
+
+    class Meta:
+        verbose_name_plural = "Слайдеры"
+
+
 
 
 
