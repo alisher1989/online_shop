@@ -1,12 +1,23 @@
 from django.http import JsonResponse
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer, \
+    Call_back, Slider, Order, BasketOrder
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
-    NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer
+    NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
+    FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer, \
+    BasketOrderItemSerializer
 from rest_framework import pagination
+import random
+from rest_framework import filters
 
+
+class CustomPaginationForNewItemsMainPage(pagination.PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+    page_query_param = 'p'
 
 
 class AdvantagesViewSet(viewsets.ModelViewSet):
@@ -78,7 +89,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 
 class CollectionDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """Просмотр детального просмотра коллекции"""
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
 
@@ -91,7 +102,7 @@ class CustomPaginationForCollectionItems(pagination.PageNumberPagination):
 
 
 class CollectionDetailViewSet2(viewsets.ModelViewSet):
-    """Список коллекции"""
+    """При просмотре определенной коллекции, будет показаны все товары из этой коллекции"""
     queryset = Item.objects.all()
     serializer_class = SimilarItemSerializer
     pagination_class = CustomPaginationForCollectionItems
@@ -129,10 +140,13 @@ class SimilarItemViewSet(viewsets.ModelViewSet):
     serializer_class = SimilarItemSerializer
 
     def list(self, request, *args, **kwargs):
-        if Item.objects.filter(collection_id=kwargs['pk']).count() > 5:
-            queryset = Item.objects.filter(collection_id=kwargs['pk'])[-5:]
+        coll_id = Item.objects.get(pk=kwargs['pk']).collection_id
+        item = Item.objects.get(pk=kwargs['pk'])
+        items = Item.objects.filter(collection_id=coll_id).exclude(id=item.id)
+        if items.count() > 5:
+            queryset = items.order_by('-id')[:5]
         else:
-            queryset = Item.objects.filter(collection_id=kwargs['pk'])
+            queryset = items
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -148,12 +162,15 @@ class SimilarItemViewSet(viewsets.ModelViewSet):
 
 
 class NewProductDetailViewSet(viewsets.ModelViewSet):
-    """Список коллекции"""
-    queryset = Item.objects.all()
+    """Список Новинок """
+    queryset = Item.objects.filter(new_product=True).order_by('-id')
     serializer_class = SimilarItemSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = Item.objects.filter(new_product=True)
+        if Item.objects.filter(new_product=True).order_by('-id').count() > 5:
+            queryset = Item.objects.filter(new_product=True).order_by('-id')[:5]
+        else:
+            queryset = Item.objects.filter(new_product=True).order_by('-id')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -168,8 +185,136 @@ class NewProductDetailViewSet(viewsets.ModelViewSet):
         return context
 
 
+class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
+    """Список Избранных товаров"""
+    queryset = Item.objects.filter(favorite=True)
+    serializer_class = FavoriteItemSerializer
+    pagination_class = CustomPaginationForCollectionItems
+
+    def get_serializer_context(self):
+        context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
+        context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
+        return context
 
 
+class RandomProductDetailViewSet(viewsets.ModelViewSet):
+    """Список рандомных товаров, если нет избранных"""
+    queryset = Item.objects.all()
+    serializer_class = SimilarItemSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(favorite=True)
+        collection = Collection.objects.all()
+        random1 = []
+        if not queryset:
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'k': i.items_collection.all()})
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['k'])))
+            queryset = l
+        else:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super(RandomProductDetailViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 
+class PublicOfferViewSet(viewsets.ModelViewSet):
+    """Публичная оферта"""
+    queryset = Public_offer.objects.all()
+    serializer_class = PublicOfferSerializer
 
+
+class CallBackViewSet(viewsets.ModelViewSet):
+    """Обратный звонок"""
+    queryset = Call_back.objects.all()
+    serializer_class = CallBackSerializer
+
+
+class SliderViewSet(viewsets.ModelViewSet):
+    """Обратный звонок"""
+    queryset = Slider.objects.all()
+    serializer_class = SliderSerializer
+
+
+class HitOfSalesViewSet(viewsets.ModelViewSet):
+    """Список Новинок """
+    queryset =Item.objects.filter(hit_of_sales=True).order_by('-id')
+    serializer_class = SimilarItemSerializer
+    pagination_class = CustomPaginationForNews
+
+    def get_serializer_context(self):
+        context = super(HitOfSalesViewSet, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+
+class NewProductMainPageViewSet2(viewsets.ModelViewSet):
+    """Список Новинок для главной страницы"""
+    queryset =Item.objects.filter(new_product=True).order_by('-id')
+    serializer_class = SimilarItemSerializer
+    pagination_class = CustomPaginationForNews
+
+    def get_serializer_context(self):
+        context = super(NewProductMainPageViewSet2, self).get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+
+class OrderViewSet(ApiView):
+    """Страница для заказа"""
+
+    def post(self, request, *args, **kwargs):
+        post1 = request.POST
+        order = Order.objects.create(
+            name=post1['name'],
+            surname=post1['surname'],
+            email=post1['email'],
+            phone=post1['phone'],
+            country=post1['country'],
+            city=post1['city']
+        )
+
+        b = BasketOrder.objects.create(image=request.FILES['image'], basket=order, color=post1['color'],
+                                       title=post1['title'], size=post1['size'], price=post1['price'],
+                                       total_lines=post1['total_lines'], status=post1['status'],
+                                       quantity_in_line=post1['quantity_in_line'])
+        if not 'discount' in post1:
+            pass
+        elif post1['discount']:
+            Discounted_Price = int(post1['price']) - (100 * (int(post1['discount'])) / 100)
+            b.old_price = Discounted_Price
+            b.save()
+        else:
+            b.old_price = None
+        return Response(status=status.HTTP_201_CREATED)
+
+    def get(self, request, *args, **kwargs):
+        tutorials = BasketOrder.objects.all()
+        tutorials_serializer = BasketOrderItemSerializer(tutorials, many=True, context={'request': request})
+        return Response(tutorials_serializer.data, 200)
+
+
+class QuestionsAPIView(viewsets.ModelViewSet):
+    pagination_class = CustomPaginationForNews
+    serializer_class = SimilarItemSerializer
+    queryset = Item.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(title__icontains=request.GET['search'])
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = SimilarItemSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)

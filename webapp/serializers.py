@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem
+from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
+    Public_offer, Call_back, Slider, Order, BasketOrder
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -94,6 +95,22 @@ class SimilarItemSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class FavoriteItemSerializer(serializers.ModelSerializer):
+    item_images = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = ['id', 'item_images', 'discount', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite', 'count']
+
+    def get_item_images(self, obj):
+        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
+        return serializer.data
+
+    def get_count(self, obj):
+        return {'count_of_favorites': self.context['count']}
+
+
 class CollectionItemSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -101,6 +118,30 @@ class CollectionItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
 
 
+class PublicOfferSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Public_offer
+        exclude = []
 
 
+class CallBackSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Call_back
+        fields = ['name', 'phone']
+
+
+class SliderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Slider
+        exclude = []
+
+
+class BasketOrderItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BasketOrder
+        fields = ['image', 'title', 'quantity_in_line', 'color', 'price', 'total_products']
 
