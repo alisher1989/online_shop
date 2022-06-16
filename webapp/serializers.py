@@ -145,3 +145,9 @@ class BasketOrderItemSerializer(serializers.ModelSerializer):
         model = BasketOrder
         fields = ['image', 'title', 'quantity_in_line', 'color', 'price', 'total_products']
 
+
+class TitleSearchSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Item
+        fields = ['id', 'title']

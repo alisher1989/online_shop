@@ -7,7 +7,7 @@ from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collectio
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
     FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer, \
-    BasketOrderItemSerializer
+    BasketOrderItemSerializer, TitleSearchSerializer
 from rest_framework import pagination
 import random
 from rest_framework import filters
@@ -191,6 +191,30 @@ class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteItemSerializer
     pagination_class = CustomPaginationForCollectionItems
 
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(favorite=True)
+        collection = Collection.objects.all()
+        random1 = []
+        if not queryset:
+            print('hhhh')
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'k': i.items_collection.all()})
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['k'])))
+            queryset = l
+            if len(l) > 5:
+                queryset = l[:5]
+        else:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     def get_serializer_context(self):
         context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
         context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
@@ -207,6 +231,7 @@ class RandomProductDetailViewSet(viewsets.ModelViewSet):
         collection = Collection.objects.all()
         random1 = []
         if not queryset:
+            print('hhhh')
             if collection:
                 for i in collection:
                     if i.items_collection.all():
@@ -313,8 +338,39 @@ class QuestionsAPIView(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = Item.objects.filter(title__icontains=request.GET['search'])
         page = self.paginate_queryset(queryset)
+        collection = Collection.objects.all()
+        random1 = []
+        if not queryset:
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'k': i.items_collection.all()})
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['k'])))
+            queryset = l
+            if len(l) > 5:
+                queryset = l[:5]
+        else:
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        serializer = SimilarItemSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class TitleSearchView(viewsets.ModelViewSet):
+    queryset = Item.objects.all()
+    serializer_class = TitleSearchSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(title__icontains=request.GET['search'])
+
+        page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        serializer = SimilarItemSerializer(queryset, many=True, context={'request': request})
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+

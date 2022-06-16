@@ -3,7 +3,8 @@ from django.urls import path
 from webapp.views import AdvantagesViewSet, About_usViewSet, HelpViewSet, ApiView, HelpImageViewSet, NewsViewSet, \
     CollectionViewSet, ItemViewSet, SimilarItemViewSet, CollectionDetailViewSet, CollectionDetailViewSet2, \
     NewProductDetailViewSet, FavoriteProductDetailViewSet, RandomProductDetailViewSet, PublicOfferViewSet, \
-    CallBackViewSet, SliderViewSet, HitOfSalesViewSet, NewProductMainPageViewSet2, OrderViewSet, QuestionsAPIView
+    CallBackViewSet, SliderViewSet, HitOfSalesViewSet, NewProductMainPageViewSet2, OrderViewSet, QuestionsAPIView, \
+    TitleSearchView
 
 urlpatterns = [
     path('advantages/', AdvantagesViewSet.as_view({'get': 'list'})),
@@ -15,6 +16,7 @@ urlpatterns = [
     path('favorites/', FavoriteProductDetailViewSet.as_view({'get': 'list'})),
     path('hit_of_sales/', HitOfSalesViewSet.as_view({'get': 'list'})),
     path('random/', RandomProductDetailViewSet.as_view({'get': 'list'})),
+    path('title_items/', TitleSearchView.as_view({'get': 'list'})),
     path('public_offer/', PublicOfferViewSet.as_view({'get': 'list'})),
     path('slider/', SliderViewSet.as_view({'get': 'list'})),
     path('call_back/', CallBackViewSet.as_view({'get': 'list', 'post': 'create'})),
