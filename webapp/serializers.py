@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Call_back, Slider
+    Public_offer, Call_back, Slider, Order, BasketOrder
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -138,4 +138,10 @@ class SliderSerializer(serializers.ModelSerializer):
         model = Slider
         exclude = []
 
+
+class BasketOrderItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BasketOrder
+        fields = ['image', 'title', 'quantity_in_line', 'color', 'price', 'total_products']
 

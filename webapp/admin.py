@@ -1,8 +1,9 @@
 from django.contrib.admin import TabularInline
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Slider, Call_back
+    Public_offer, Slider, Call_back, Order, BasketOrder
 
 
 class AdvantagesAdmin(admin.ModelAdmin):
@@ -14,28 +15,25 @@ class ImageAdminInline(TabularInline):
     model = ImageForItem
     fields = ['image', 'color']
 
-    #def has_add_permission(self, request, obj):
-     #   if obj.images_for_item.count() >= 2:
-      #      return False
-       # print(dir(obj))
-        #print(type(obj))
-       # return True
-
-
-#class HomePageModelForm(forms.ModelForm):
-#    def clean(self):
-#        if self.instance.images_for_item.all().count() > 2:
-#            self._errors.setdefault('__all__', ErrorList()).append("Вы не можете добавлять больше 3 фото на один товар.")
-#        return self.cleaned_data
-
 
 @admin.register(Item)
 class ProductModelAdmin(admin.ModelAdmin):
-#    form = HomePageModelForm
     inlines = (ImageAdminInline,)
-    exclude = []
+    exclude = ['order']
 
 
+class CityTabularInline(TabularInline):
+    model = BasketOrder
+    extra = 1
+    exclude = ['discount']
+
+
+class OrderAdmin(admin.ModelAdmin):
+    inlines = [CityTabularInline, ]
+    search_fields = ['phone', 'name', 'surname', 'email']
+
+
+admin.site.register(Order, OrderAdmin)
 admin.site.register(Advantages)
 admin.site.register(ImageHelp)
 admin.site.register(Help)
