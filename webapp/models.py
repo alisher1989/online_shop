@@ -5,7 +5,7 @@ from colorfield.fields import ColorField
 from django.contrib.auth.models import User
 from django.db import models
 from ckeditor.fields import RichTextField
-from phonenumber_field.formfields import PhoneNumberField
+from multiselectfield import MultiSelectField
 
 
 class Advantages(models.Model):
@@ -203,15 +203,15 @@ class BasketOrder(models.Model):
     color = ColorField(null=True, blank=True)
     title = models.CharField(max_length=50, null=True, blank=True)
     size = models.CharField(max_length=10, null=True, blank=True)
-    price = models.IntegerField(null=True, blank=True)
-    old_price = models.IntegerField(null=True, blank=True)
-    discount = models.IntegerField(null=True, blank=True)
+    price = models.IntegerField(null=True, blank=True, default=0)
+    old_price = models.IntegerField(null=True, blank=True, default=0)
+    discount = models.IntegerField(null=True, blank=True, default=0)
     quantity_in_line = models.CharField(verbose_name='Размеры в линейке', null=True, blank=True, max_length=10)
-    total_lines = models.IntegerField(null=True, blank=True, verbose_name='Количество линеек')
-    total_products = models.IntegerField(null=True, blank=True, verbose_name='Количество всех товаров')
-    total_price = models.IntegerField(null=True, blank=True, verbose_name='Стоимость всех линеек')
-    total_discount = models.IntegerField(null=True, blank=True, verbose_name='Скидка от всей суммы')
-    total_payment = models.IntegerField(null=True, blank=True, verbose_name='Итого к оплате')
+    total_lines = models.IntegerField(null=True, blank=True, verbose_name='Количество линеек', default=0)
+    total_products = models.IntegerField(null=True, blank=True, verbose_name='Количество всех товаров', default=0)
+    total_price = models.IntegerField(null=True, blank=True, verbose_name='Стоимость всех линеек', default=0)
+    total_discount = models.IntegerField(null=True, blank=True, verbose_name='Скидка от всей суммы', default=0)
+    total_payment = models.IntegerField(null=True, blank=True, verbose_name='Итого к оплате', default=0)
     basket = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='orders_basket', null=True)
     status = models.CharField(max_length=50, choices=STATUS_OF_ORDER, default='new')
     data = models.DateField(null=False, default=datetime.today)
@@ -221,16 +221,37 @@ class BasketOrder(models.Model):
         verbose_name_plural = 'Товары в корзинке'
 
     def save(self, *args, **kwargs):
-        list_of_quantity = list(self.quantity_in_line.split("-"))
-        sizes = math.ceil(((int(list_of_quantity[1]) - int(list_of_quantity[0])) / 2) + 1)
-        self.total_products = sizes * int(self.total_lines)
-        if self.old_price:
-            self.total_price = int(self.total_products) * int(self.price)
+        if self.quantity_in_line:
+            list_of_quantity = list(self.quantity_in_line.split("-"))
+            sizes = math.ceil(((int(list_of_quantity[1]) - int(list_of_quantity[0])) / 2) + 1)
+            self.total_products = sizes * int(self.total_lines)
+        else:
+            pass
+
+        self.total_price = int(self.total_products) * int(self.price)
+        if self.discount != 0:
             self.total_discount = int(self.total_price) - ((int(self.total_products) * int(self.old_price)))
             self.total_payment = int(self.total_price) - int(self.total_discount)
         else:
-            self.total_price = int(self.total_products) * int(self.price)
             self.total_payment = self.total_price
         super(BasketOrder, self).save(*args, **kwargs)
 
 
+class FooterHeader(models.Model):
+    image_for_footer = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для хедера')
+    image_for_header = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для футера')
+    text_info = models.CharField(max_length=50, null=True, blank=True, verbose_name='Текстовая информация')
+    number_for_header = models.CharField(max_length=10, null=True, blank=True, verbose_name='Номер в хедере')
+
+
+CONNECT_WAY = [
+    ('Номер', 'Номер'),
+    ('Почта', 'Почта'),
+    ('Инстаграм', 'Инстаграм'),
+    ('Телеграм', 'Телеграм'),
+    ('WhatsApp', 'WhatsApp'),
+]
+
+
+class SecondTab(models.Model):
+    to_contact = MultiSelectField(choices=CONNECT_WAY)

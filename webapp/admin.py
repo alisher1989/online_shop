@@ -25,7 +25,6 @@ class ProductModelAdmin(admin.ModelAdmin):
 class CityTabularInline(TabularInline):
     model = BasketOrder
     extra = 1
-    exclude = ['discount']
 
 
 class OrderAdmin(admin.ModelAdmin):

@@ -301,15 +301,17 @@ class OrderViewSet(ApiView):
 
     def post(self, request, *args, **kwargs):
         post1 = request.POST
-        order = Order.objects.create(
-            name=post1['name'],
-            surname=post1['surname'],
-            email=post1['email'],
-            phone=post1['phone'],
-            country=post1['country'],
-            city=post1['city']
-        )
-
+        if kwargs:
+            order = Order.objects.get(pk=kwargs['pk'])
+        else:
+            order = Order.objects.create(
+                name=post1['name'],
+                surname=post1['surname'],
+                email=post1['email'],
+                phone=post1['phone'],
+                country=post1['country'],
+                city=post1['city']
+            )
         b = BasketOrder.objects.create(image=request.FILES['image'], basket=order, color=post1['color'],
                                        title=post1['title'], size=post1['size'], price=post1['price'],
                                        total_lines=post1['total_lines'], status=post1['status'],
@@ -317,17 +319,36 @@ class OrderViewSet(ApiView):
         if not 'discount' in post1:
             pass
         elif post1['discount']:
+            b.discount = post1['discount']
             Discounted_Price = int(post1['price']) - (100 * (int(post1['discount'])) / 100)
-            b.old_price = Discounted_Price
+            b.old_price = int(Discounted_Price)
             b.save()
-        else:
-            b.old_price = None
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED, data={'object': 'successfully created'})
 
     def get(self, request, *args, **kwargs):
         tutorials = BasketOrder.objects.all()
         tutorials_serializer = BasketOrderItemSerializer(tutorials, many=True, context={'request': request})
         return Response(tutorials_serializer.data, 200)
+
+    def delete(self, request, pk, **kwargs):
+        try:
+            Order.objects.get(pk=pk).delete()
+            return Response({'delete': 'successfully deleted'})
+        except:
+            return Response({'delete': 'There is no object with this PK'})
+
+
+class OrderDeleteViewSet(ApiView):
+    """Страница для заказа"""
+
+    def delete(self, request, pk):
+        try:
+            BasketOrder.objects.get(pk=pk).delete()
+            return Response({'delete': 'successfully deleted'})
+        except:
+            return Response({'delete': 'There is no object with this PK'})
+
+
 
 
 class QuestionsAPIView(viewsets.ModelViewSet):
@@ -344,10 +365,10 @@ class QuestionsAPIView(viewsets.ModelViewSet):
             if collection:
                 for i in collection:
                     if i.items_collection.all():
-                        random1.append({'k': i.items_collection.all()})
+                        random1.append({'collection_items': i.items_collection.all()})
             l = []
             for i in random1:
-                l.append(random.choice(list(i['k'])))
+                l.append(random.choice(list(i['collection_items'])))
             queryset = l
             if len(l) > 5:
                 queryset = l[:5]

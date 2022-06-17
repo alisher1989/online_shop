@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_swagger',
     'colorfield',
-    'phonenumber_field'
+    'phonenumber_field',
+    'multiselectfield',
 ]
 
 MIDDLEWARE = [
