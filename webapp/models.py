@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from ckeditor.fields import RichTextField
 from multiselectfield import MultiSelectField
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Advantages(models.Model):
@@ -241,17 +242,55 @@ class FooterHeader(models.Model):
     image_for_footer = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для хедера')
     image_for_header = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для футера')
     text_info = models.CharField(max_length=50, null=True, blank=True, verbose_name='Текстовая информация')
-    number_for_header = models.CharField(max_length=10, null=True, blank=True, verbose_name='Номер в хедере')
+    number_for_header = PhoneNumberField(blank=True, default='')
 
 
-CONNECT_WAY = [
-    ('Номер', 'Номер'),
-    ('Почта', 'Почта'),
-    ('Инстаграм', 'Инстаграм'),
-    ('Телеграм', 'Телеграм'),
-    ('WhatsApp', 'WhatsApp'),
+TYPE_TO_CONNECT = [
+    ('phone', 'phone'),
+    ('email', 'email'),
+    ('telegram', 'telegram'),
+    ('whats_app', 'whats app'),
+    ('insta', 'Instagram'),
 ]
 
 
-class SecondTab(models.Model):
-    to_contact = MultiSelectField(choices=CONNECT_WAY)
+class Connect(models.Model):
+    type_of_connect = MultiSelectField(choices=TYPE_TO_CONNECT, blank=True)
+    phone = PhoneNumberField(blank=True)
+    telegram = models.CharField(max_length=300, null=False, blank=True, default='')
+    whats_app = models.CharField(max_length=300, null=False, blank=True, default='')
+    email = models.EmailField(max_length=300, null=False, blank=True, default='')
+    instagram= models.CharField(max_length=300, null=False, blank=True, default='')
+
+    def save(self, *args, **kwargs):
+        whats_link = 'https://api.whatsapp.com/send?phone='
+        teleg_link = 'https://telegram.me/'
+        if 'phone' in self.type_of_connect and self.phone:
+            self.phone = self.phone
+        else:
+            self.phone = ''
+        if 'whats_app' in self.type_of_connect and self.whats_app:
+            if whats_link == self.whats_app[:36]:
+                self.whats_app = self.whats_app
+            else:
+                self.whats_app = whats_link + self.whats_app
+        else:
+            self.whats_app = ''
+        if 'telegram' in self.type_of_connect and self.telegram:
+            print(self.telegram[:20])
+            if teleg_link == self.telegram[:20]:
+                self.telegram = self.telegram
+            else:
+                self.telegram = teleg_link + self.telegram
+        else:
+            self.telegram = ''
+        if 'insta' in self.type_of_connect and self.instagram:
+            self.instagram = self.instagram
+        else:
+            self.instagram = ''
+        print(self.type_of_connect)
+        if 'email' in self.type_of_connect and self.email:
+            self.email = self.email
+        else:
+            self.email = ''
+        super(Connect, self).save(*args, **kwargs)

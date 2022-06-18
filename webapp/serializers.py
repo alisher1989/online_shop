@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Call_back, Slider, Order, BasketOrder
+    Public_offer, Call_back, Slider, Order, BasketOrder, FooterHeader, Connect
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -151,3 +151,17 @@ class TitleSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['id', 'title']
+
+
+class HeaderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FooterHeader
+        exclude = []
+
+
+class ConnectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Connect
+        exclude = ['type_of_connect']

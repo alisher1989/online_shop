@@ -4,7 +4,7 @@ from webapp.views import AdvantagesViewSet, About_usViewSet, HelpViewSet, ApiVie
     CollectionViewSet, ItemViewSet, SimilarItemViewSet, CollectionDetailViewSet, CollectionDetailViewSet2, \
     NewProductDetailViewSet, FavoriteProductDetailViewSet, RandomProductDetailViewSet, PublicOfferViewSet, \
     CallBackViewSet, SliderViewSet, HitOfSalesViewSet, NewProductMainPageViewSet2, OrderViewSet, QuestionsAPIView, \
-    TitleSearchView, OrderDeleteViewSet
+    TitleSearchView, OrderDeleteViewSet, HeaderApiView
 
 urlpatterns = [
     path('advantages/', AdvantagesViewSet.as_view({'get': 'list'})),
@@ -31,6 +31,7 @@ urlpatterns = [
     path('item/<int:pk>/', ItemViewSet.as_view({'get': 'retrieve'})),
     path('items/', QuestionsAPIView.as_view({'get': 'list'})),
     path('order/', OrderViewSet.as_view()),
+    path('header_footer/', HeaderApiView.as_view()),
     path('order/<int:pk>/', OrderViewSet.as_view()),
     path('basket_order/<int:pk>/', OrderDeleteViewSet.as_view()),
 ]

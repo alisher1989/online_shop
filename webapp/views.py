@@ -3,14 +3,13 @@ from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer, \
-    Call_back, Slider, Order, BasketOrder
+    Call_back, Slider, Order, BasketOrder, FooterHeader, Connect
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
     FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer, \
-    BasketOrderItemSerializer, TitleSearchSerializer
+    BasketOrderItemSerializer, TitleSearchSerializer, HeaderSerializer, ConnectSerializer
 from rest_framework import pagination
 import random
-from rest_framework import filters
 
 
 class CustomPaginationForNewItemsMainPage(pagination.PageNumberPagination):
@@ -395,3 +394,13 @@ class TitleSearchView(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class HeaderApiView(APIView):
+    """Endpoint для Хедера и Футера"""
+    def get(self, request, *args, **kwargs):
+        # header = FooterHeader.objects.all()
+        headers_serializer = HeaderSerializer(FooterHeader.objects.all(), many=True,  context={'request': request})
+        # connect = Connect.objects.all()
+        other = ConnectSerializer(Connect.objects.all(), many=True)
+        response = {'header': headers_serializer.data, 'connection_data': other.data}
+        return Response(response, 200)
