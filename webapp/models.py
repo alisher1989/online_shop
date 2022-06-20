@@ -44,7 +44,6 @@ class ImageForItem(models.Model):
         verbose_name = 'Фото для товара'
 
 
-
 class About_us(models.Model):
     header = models.CharField(max_length=200, verbose_name='Заголовок')
     description = RichTextField(max_length=1000, verbose_name='Описание')
@@ -52,6 +51,10 @@ class About_us(models.Model):
     class Meta:
         verbose_name_plural = "О нас"
         verbose_name = "О нас"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(About_us, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.header
@@ -124,6 +127,7 @@ class Item(models.Model):
     hit_of_sales = models.BooleanField(default=False)
     new_product = models.BooleanField(default=False)
     favorite = models.BooleanField(default=False)
+    profile = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='favorites')
 
     class Meta:
         verbose_name_plural = "Товары"
@@ -133,6 +137,17 @@ class Item(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        if self.product_size:
+            list_of_quantity = list(self.product_size.split("-"))
+            print(list_of_quantity)
+            sizes = math.ceil(((int(list_of_quantity[1]) - int(list_of_quantity[0])) / 2) + 1)
+            self.quantity_in_line = sizes
+        else:
+            pass
+        if self.profile:
+            self.favorite = True
+        else:
+            self.favorite = False
         if self.discount:
             self.old_price = int(self.price) * (100 - int(self.discount)) / 100
         else:
@@ -154,7 +169,7 @@ class Public_offer(models.Model):
 
 class Slider(models.Model):
     image = models.FileField(upload_to='gallery_images', null=True, verbose_name='Фото для слайдера')
-    title = models.CharField(max_length=200, verbose_name='Название', null=False, blank=False)
+    title = models.CharField(max_length=200, verbose_name='Название', null=False, blank=True)
 
     class Meta:
         verbose_name_plural = "Слайдеры"
@@ -164,12 +179,18 @@ class Slider(models.Model):
         return self.title
 
 
+STATUS_OF_CALL = [
+    ('да', 'да'),
+    ('нет', 'нет'),
+]
+
+
 class Call_back(models.Model):
     name = models.CharField(max_length=200, verbose_name='Имя', blank=False, null=False)
     phone = models.CharField(max_length=200, verbose_name='Номер телефона', blank=False, null=False)
     date = models.DateTimeField(verbose_name='Дата обращения', blank=False, null=False)
     call_type = models.CharField(max_length=200, verbose_name='Тип обращения', blank=False, null=False)
-    status = models.BooleanField(default=False)
+    status = models.CharField(default=STATUS_OF_CALL[1][0], choices=STATUS_OF_CALL, max_length=10)
 
     class Meta:
         verbose_name_plural = 'Обратный звонок'

@@ -266,7 +266,7 @@ class CallBackViewSet(viewsets.ModelViewSet):
 
 
 class SliderViewSet(viewsets.ModelViewSet):
-    """Обратный звонок"""
+    """Endpoint для слайдера"""
     queryset = Slider.objects.all()
     serializer_class = SliderSerializer
 
@@ -348,9 +348,7 @@ class OrderDeleteViewSet(ApiView):
             return Response({'delete': 'There is no object with this PK'})
 
 
-
-
-class QuestionsAPIView(viewsets.ModelViewSet):
+class ItemSearchAPIView(viewsets.ModelViewSet):
     pagination_class = CustomPaginationForNews
     serializer_class = SimilarItemSerializer
     queryset = Item.objects.all()

@@ -71,8 +71,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['item_images', 'item_collection', 'title', 'article', 'price', 'old_price', 'discount', 'description', 'product_size', 'fabric_structure',
-                  'quantity_in_line', 'material', 'hit_of_sales', 'new_product']
+        fields = ['item_collection', 'item_images', 'title', 'article', 'price', 'old_price', 'discount', 'description', 'product_size', 'fabric_structure',
+                  'quantity_in_line', 'material', 'hit_of_sales', 'new_product', 'favorite']
 
     def get_item_images(self, obj):
         serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
@@ -129,7 +129,7 @@ class CallBackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Call_back
-        fields = ['name', 'phone']
+        fields = ['name', 'phone', 'call_type']
 
 
 class SliderSerializer(serializers.ModelSerializer):

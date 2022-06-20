@@ -1,12 +1,14 @@
-from django.urls import path
+from django.urls import path, include
 
 from webapp.views import AdvantagesViewSet, About_usViewSet, HelpViewSet, ApiView, HelpImageViewSet, NewsViewSet, \
     CollectionViewSet, ItemViewSet, SimilarItemViewSet, CollectionDetailViewSet, CollectionDetailViewSet2, \
     NewProductDetailViewSet, FavoriteProductDetailViewSet, RandomProductDetailViewSet, PublicOfferViewSet, \
-    CallBackViewSet, SliderViewSet, HitOfSalesViewSet, NewProductMainPageViewSet2, OrderViewSet, QuestionsAPIView, \
-    TitleSearchView, OrderDeleteViewSet, HeaderApiView
+    CallBackViewSet, SliderViewSet, HitOfSalesViewSet, NewProductMainPageViewSet2, OrderViewSet, \
+    TitleSearchView, OrderDeleteViewSet, HeaderApiView, ItemSearchAPIView
 
 urlpatterns = [
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
     path('advantages/', AdvantagesViewSet.as_view({'get': 'list'})),
     path('about/', About_usViewSet.as_view({'get': 'list'})),
     path('news/', NewsViewSet.as_view({'get': 'list'})),
@@ -22,14 +24,13 @@ urlpatterns = [
     path('call_back/', CallBackViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('collection/<int:pk>/items/', CollectionDetailViewSet2.as_view({'get': 'list'})),
     path('collection/<int:pk>/', CollectionDetailViewSet.as_view({'get': 'retrieve'})),
-
     path('help/', HelpViewSet.as_view({'post': 'create'})),
     path('imagehelp/', HelpImageViewSet.as_view({'post': 'create'})),
     path('help/<int:pk>/', HelpViewSet.as_view({'put': 'update', 'get': 'retrieve'})),
     path('answers/', ApiView.as_view()),
     path('item/<int:pk>/similar/', SimilarItemViewSet.as_view({'get': 'list'})),
     path('item/<int:pk>/', ItemViewSet.as_view({'get': 'retrieve'})),
-    path('items/', QuestionsAPIView.as_view({'get': 'list'})),
+    path('items/', ItemSearchAPIView.as_view({'get': 'list'})),
     path('order/', OrderViewSet.as_view()),
     path('header_footer/', HeaderApiView.as_view()),
     path('order/<int:pk>/', OrderViewSet.as_view()),
