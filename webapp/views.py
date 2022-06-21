@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 from rest_framework import viewsets, status, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer, \
-    Call_back, Slider, Order, BasketOrder, FooterHeader, Connect
+    Call_back, Slider, Order, BasketOrder, FooterHeader, Connect, Favorite
+from webapp.permissions import CustomerAccessPermission
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
     FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer, \
@@ -186,16 +188,20 @@ class NewProductDetailViewSet(viewsets.ModelViewSet):
 
 class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
     """Список Избранных товаров"""
-    queryset = Item.objects.filter(favorite=True)
+    queryset = Favorite.objects.all()
     serializer_class = FavoriteItemSerializer
     pagination_class = CustomPaginationForCollectionItems
+    permission_classes = [IsAuthenticated, CustomerAccessPermission]
 
     def list(self, request, *args, **kwargs):
-        queryset = Item.objects.filter(favorite=True)
-        collection = Collection.objects.all()
+        queryset = Favorite.objects.filter(user=self.request.user)
+        new_list = Collection.objects.all()
+        if new_list.count() >= 5:
+            collection = random.sample(list(new_list), 5)
+        else:
+            collection = new_list
         random1 = []
         if not queryset:
-            print('hhhh')
             if collection:
                 for i in collection:
                     if i.items_collection.all():
@@ -214,9 +220,20 @@ class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        data = {}
+        try:
+            data['data'] = Favorite.objects.create(user=self.request.user, product_id=int(request.data['product']))
+            serializer = FavoriteItemSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response({'object': 'is successfully created'}, status=status.HTTP_201_CREATED, headers=headers)
+        except:
+            return Response({'attention': 'There is no chance to add one product twice in favorite'})
+
     def get_serializer_context(self):
         context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
-        context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
+        context.update({"request": self.request})
         return context
 
 
@@ -402,3 +419,4 @@ class HeaderApiView(APIView):
         other = ConnectSerializer(Connect.objects.all(), many=True)
         response = {'header': headers_serializer.data, 'connection_data': other.data}
         return Response(response, 200)
+

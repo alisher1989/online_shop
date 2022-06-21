@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Slider, Call_back, Order, BasketOrder, Connect, FooterHeader
+    Public_offer, Slider, Call_back, Order, BasketOrder, Connect, FooterHeader, Favorite
 
 
 class ImageTabularInline(TabularInline):
@@ -58,3 +58,4 @@ admin.site.register(Slider)
 admin.site.register(Call_back, CallBackAdmin)
 admin.site.register(Connect)
 admin.site.register(FooterHeader)
+admin.site.register(Favorite)

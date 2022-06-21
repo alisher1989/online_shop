@@ -126,8 +126,6 @@ class Item(models.Model):
     material = models.CharField(max_length=200, verbose_name='Материал', null=True, blank=True)
     hit_of_sales = models.BooleanField(default=False)
     new_product = models.BooleanField(default=False)
-    favorite = models.BooleanField(default=False)
-    profile = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='favorites')
 
     class Meta:
         verbose_name_plural = "Товары"
@@ -144,10 +142,6 @@ class Item(models.Model):
             self.quantity_in_line = sizes
         else:
             pass
-        if self.profile:
-            self.favorite = True
-        else:
-            self.favorite = False
         if self.discount:
             self.old_price = int(self.price) * (100 - int(self.discount)) / 100
         else:
@@ -315,3 +309,11 @@ class Connect(models.Model):
         else:
             self.email = ''
         super(Connect, self).save(*args, **kwargs)
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, related_name='favorites', on_delete=models.CASCADE)
+    product = models.ForeignKey('Item', related_name='favorites', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'product', )

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Call_back, Slider, Order, BasketOrder, FooterHeader, Connect
+    Public_offer, Call_back, Slider, Order, BasketOrder, FooterHeader, Connect, Favorite
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -88,7 +88,7 @@ class SimilarItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['id', 'item_images', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
+        fields = ['id', 'item_images', 'title', 'price', 'old_price', 'discount', 'product_size']
 
     def get_item_images(self, obj):
         serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
@@ -96,19 +96,24 @@ class SimilarItemSerializer(serializers.ModelSerializer):
 
 
 class FavoriteItemSerializer(serializers.ModelSerializer):
-    item_images = serializers.SerializerMethodField()
-    count = serializers.SerializerMethodField()
+    product = serializers.SerializerMethodField()
 
     class Meta:
-        model = Item
-        fields = ['id', 'item_images', 'discount', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite', 'count']
+        model = Favorite
+        fields = ['id', 'product']
 
-    def get_item_images(self, obj):
-        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
-        return serializer.data
-
-    def get_count(self, obj):
-        return {'count_of_favorites': self.context['count']}
+    def get_product(self, obj):
+        if obj:
+            try:
+                queryset = [obj.product]
+                serializer = SimilarItemSerializer(queryset, many=True, context={'request': self.context['request']})
+                return serializer.data
+            except:
+                queryset = [obj]
+                serializer = SimilarItemSerializer(queryset, many=True, context={'request': self.context['request']})
+                return serializer.data
+        else:
+            return 'No queryset'
 
 
 class CollectionItemSerializer(serializers.ModelSerializer):
