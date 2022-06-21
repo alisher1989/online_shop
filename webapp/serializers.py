@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Call_back, Slider, Order, BasketOrder
+    Public_offer, Call_back, Slider, Order, BasketOrder, FooterHeader, Connect, Favorite
 
 
 class AdvantagesSerializer(serializers.ModelSerializer):
@@ -71,8 +71,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['item_images', 'item_collection', 'title', 'article', 'price', 'old_price', 'discount', 'description', 'product_size', 'fabric_structure',
-                  'quantity_in_line', 'material', 'hit_of_sales', 'new_product']
+        fields = ['item_collection', 'item_images', 'title', 'article', 'price', 'old_price', 'discount', 'description', 'product_size', 'fabric_structure',
+                  'quantity_in_line', 'material', 'hit_of_sales', 'new_product', 'favorite']
 
     def get_item_images(self, obj):
         serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
@@ -88,7 +88,7 @@ class SimilarItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['id', 'item_images', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite']
+        fields = ['id', 'item_images', 'title', 'price', 'old_price', 'discount', 'product_size']
 
     def get_item_images(self, obj):
         serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
@@ -96,19 +96,24 @@ class SimilarItemSerializer(serializers.ModelSerializer):
 
 
 class FavoriteItemSerializer(serializers.ModelSerializer):
-    item_images = serializers.SerializerMethodField()
-    count = serializers.SerializerMethodField()
+    product = serializers.SerializerMethodField()
 
     class Meta:
-        model = Item
-        fields = ['id', 'item_images', 'discount', 'title', 'price', 'old_price', 'discount', 'product_size', 'favorite', 'count']
+        model = Favorite
+        fields = ['id', 'product']
 
-    def get_item_images(self, obj):
-        serializer = ItemImageSerializer(ImageForItem.objects.filter(item_id=obj.pk), many=True, context={'request': self.context['request']})
-        return serializer.data
-
-    def get_count(self, obj):
-        return {'count_of_favorites': self.context['count']}
+    def get_product(self, obj):
+        if obj:
+            try:
+                queryset = [obj.product]
+                serializer = SimilarItemSerializer(queryset, many=True, context={'request': self.context['request']})
+                return serializer.data
+            except:
+                queryset = [obj]
+                serializer = SimilarItemSerializer(queryset, many=True, context={'request': self.context['request']})
+                return serializer.data
+        else:
+            return 'No queryset'
 
 
 class CollectionItemSerializer(serializers.ModelSerializer):
@@ -129,7 +134,7 @@ class CallBackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Call_back
-        fields = ['name', 'phone']
+        fields = ['name', 'phone', 'call_type']
 
 
 class SliderSerializer(serializers.ModelSerializer):
@@ -145,3 +150,23 @@ class BasketOrderItemSerializer(serializers.ModelSerializer):
         model = BasketOrder
         fields = ['image', 'title', 'quantity_in_line', 'color', 'price', 'total_products']
 
+
+class TitleSearchSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Item
+        fields = ['id', 'title']
+
+
+class HeaderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FooterHeader
+        exclude = []
+
+
+class ConnectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Connect
+        exclude = ['type_of_connect']

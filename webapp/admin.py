@@ -3,11 +3,25 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 from webapp.models import Advantages, Image, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, \
-    Public_offer, Slider, Call_back, Order, BasketOrder
+    Public_offer, Slider, Call_back, Order, BasketOrder, Connect, FooterHeader, Favorite
+
+
+class ImageTabularInline(TabularInline):
+    model = Image
+    extra = 1
+
+
+class AboutUSAdmin(admin.ModelAdmin):
+    inlines = [ImageTabularInline, ]
 
 
 class AdvantagesAdmin(admin.ModelAdmin):
     list_display = ['image', 'header', 'description']
+
+
+class CallBackAdmin(admin.ModelAdmin):
+    model = Call_back
+    list_display = ['name', 'phone', 'date', 'call_type', 'status']
 
 
 class ImageAdminInline(TabularInline):
@@ -25,7 +39,6 @@ class ProductModelAdmin(admin.ModelAdmin):
 class CityTabularInline(TabularInline):
     model = BasketOrder
     extra = 1
-    exclude = ['discount']
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -34,13 +47,15 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Order, OrderAdmin)
+admin.site.register(About_us, AboutUSAdmin)
 admin.site.register(Advantages)
 admin.site.register(ImageHelp)
 admin.site.register(Help)
-admin.site.register(Image)
-admin.site.register(About_us)
 admin.site.register(News)
 admin.site.register(Collection)
 admin.site.register(Public_offer)
 admin.site.register(Slider)
-admin.site.register(Call_back)
+admin.site.register(Call_back, CallBackAdmin)
+admin.site.register(Connect)
+admin.site.register(FooterHeader)
+admin.site.register(Favorite)

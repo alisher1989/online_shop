@@ -1,16 +1,17 @@
 from django.http import JsonResponse
 from rest_framework import viewsets, status, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from webapp.models import Advantages, About_us, Help, ImageHelp, News, Collection, Item, ImageForItem, Public_offer, \
-    Call_back, Slider, Order, BasketOrder
+    Call_back, Slider, Order, BasketOrder, FooterHeader, Connect, Favorite
+from webapp.permissions import CustomerAccessPermission
 from webapp.serializers import AdvantagesSerializer, About_usSerializer, HelpSerializer, ImageHelpSerializer, \
     NewsSerializer, CollectionSerializer, ItemSerializer, ItemImageSerializer, SimilarItemSerializer, \
     FavoriteItemSerializer, PublicOfferSerializer, CallBackSerializer, SliderSerializer, \
-    BasketOrderItemSerializer
+    BasketOrderItemSerializer, TitleSearchSerializer, HeaderSerializer, ConnectSerializer
 from rest_framework import pagination
 import random
-from rest_framework import filters
 
 
 class CustomPaginationForNewItemsMainPage(pagination.PageNumberPagination):
@@ -187,13 +188,52 @@ class NewProductDetailViewSet(viewsets.ModelViewSet):
 
 class FavoriteProductDetailViewSet(viewsets.ModelViewSet):
     """Список Избранных товаров"""
-    queryset = Item.objects.filter(favorite=True)
+    queryset = Favorite.objects.all()
     serializer_class = FavoriteItemSerializer
     pagination_class = CustomPaginationForCollectionItems
+    permission_classes = [IsAuthenticated, CustomerAccessPermission]
+
+    def list(self, request, *args, **kwargs):
+        queryset = Favorite.objects.filter(user=self.request.user)
+        new_list = Collection.objects.all()
+        if new_list.count() >= 5:
+            collection = random.sample(list(new_list), 5)
+        else:
+            collection = new_list
+        random1 = []
+        if not queryset:
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'k': i.items_collection.all()})
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['k'])))
+            queryset = l
+            if len(l) > 5:
+                queryset = l[:5]
+        else:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        data = {}
+        try:
+            data['data'] = Favorite.objects.create(user=self.request.user, product_id=int(request.data['product']))
+            serializer = FavoriteItemSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response({'object': 'is successfully created'}, status=status.HTTP_201_CREATED, headers=headers)
+        except:
+            return Response({'attention': 'There is no chance to add one product twice in favorite'})
 
     def get_serializer_context(self):
         context = super(FavoriteProductDetailViewSet, self).get_serializer_context()
-        context.update({"request": self.request, 'count': Item.objects.filter(favorite=True).count()})
+        context.update({"request": self.request})
         return context
 
 
@@ -207,6 +247,7 @@ class RandomProductDetailViewSet(viewsets.ModelViewSet):
         collection = Collection.objects.all()
         random1 = []
         if not queryset:
+            print('hhhh')
             if collection:
                 for i in collection:
                     if i.items_collection.all():
@@ -242,7 +283,7 @@ class CallBackViewSet(viewsets.ModelViewSet):
 
 
 class SliderViewSet(viewsets.ModelViewSet):
-    """Обратный звонок"""
+    """Endpoint для слайдера"""
     queryset = Slider.objects.all()
     serializer_class = SliderSerializer
 
@@ -276,15 +317,17 @@ class OrderViewSet(ApiView):
 
     def post(self, request, *args, **kwargs):
         post1 = request.POST
-        order = Order.objects.create(
-            name=post1['name'],
-            surname=post1['surname'],
-            email=post1['email'],
-            phone=post1['phone'],
-            country=post1['country'],
-            city=post1['city']
-        )
-
+        if kwargs:
+            order = Order.objects.get(pk=kwargs['pk'])
+        else:
+            order = Order.objects.create(
+                name=post1['name'],
+                surname=post1['surname'],
+                email=post1['email'],
+                phone=post1['phone'],
+                country=post1['country'],
+                city=post1['city']
+            )
         b = BasketOrder.objects.create(image=request.FILES['image'], basket=order, color=post1['color'],
                                        title=post1['title'], size=post1['size'], price=post1['price'],
                                        total_lines=post1['total_lines'], status=post1['status'],
@@ -292,20 +335,37 @@ class OrderViewSet(ApiView):
         if not 'discount' in post1:
             pass
         elif post1['discount']:
+            b.discount = post1['discount']
             Discounted_Price = int(post1['price']) - (100 * (int(post1['discount'])) / 100)
-            b.old_price = Discounted_Price
+            b.old_price = int(Discounted_Price)
             b.save()
-        else:
-            b.old_price = None
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED, data={'object': 'successfully created'})
 
     def get(self, request, *args, **kwargs):
         tutorials = BasketOrder.objects.all()
         tutorials_serializer = BasketOrderItemSerializer(tutorials, many=True, context={'request': request})
         return Response(tutorials_serializer.data, 200)
 
+    def delete(self, request, pk, **kwargs):
+        try:
+            Order.objects.get(pk=pk).delete()
+            return Response({'delete': 'successfully deleted'})
+        except:
+            return Response({'delete': 'There is no object with this PK'})
 
-class QuestionsAPIView(viewsets.ModelViewSet):
+
+class OrderDeleteViewSet(ApiView):
+    """Страница для заказа"""
+
+    def delete(self, request, pk):
+        try:
+            BasketOrder.objects.get(pk=pk).delete()
+            return Response({'delete': 'successfully deleted'})
+        except:
+            return Response({'delete': 'There is no object with this PK'})
+
+
+class ItemSearchAPIView(viewsets.ModelViewSet):
     pagination_class = CustomPaginationForNews
     serializer_class = SimilarItemSerializer
     queryset = Item.objects.all()
@@ -313,8 +373,50 @@ class QuestionsAPIView(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = Item.objects.filter(title__icontains=request.GET['search'])
         page = self.paginate_queryset(queryset)
+        collection = Collection.objects.all()
+        random1 = []
+        if not queryset:
+            if collection:
+                for i in collection:
+                    if i.items_collection.all():
+                        random1.append({'collection_items': i.items_collection.all()})
+            l = []
+            for i in random1:
+                l.append(random.choice(list(i['collection_items'])))
+            queryset = l
+            if len(l) > 5:
+                queryset = l[:5]
+        else:
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        serializer = SimilarItemSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class TitleSearchView(viewsets.ModelViewSet):
+    queryset = Item.objects.all()
+    serializer_class = TitleSearchSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = Item.objects.filter(title__icontains=request.GET['search'])
+
+        page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        serializer = SimilarItemSerializer(queryset, many=True, context={'request': request})
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class HeaderApiView(APIView):
+    """Endpoint для Хедера и Футера"""
+    def get(self, request, *args, **kwargs):
+        # header = FooterHeader.objects.all()
+        headers_serializer = HeaderSerializer(FooterHeader.objects.all(), many=True,  context={'request': request})
+        # connect = Connect.objects.all()
+        other = ConnectSerializer(Connect.objects.all(), many=True)
+        response = {'header': headers_serializer.data, 'connection_data': other.data}
+        return Response(response, 200)
+

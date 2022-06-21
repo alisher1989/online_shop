@@ -40,9 +40,12 @@ INSTALLED_APPS = [
     'webapp.apps.WebappConfig',
     'ckeditor',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_swagger',
     'colorfield',
-    'phonenumber_field'
+    'phonenumber_field',
+    'multiselectfield',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -134,7 +137,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = 'gallery_images/'
 
-REST_FRAMEWORK = { 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema' }
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+                  'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.TokenAuthentication',),
+                  }
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
